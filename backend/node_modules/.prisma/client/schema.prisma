@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum DriverStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  DELAYED
+}
+
+model Driver {
+  id           Int            @id @default(autoincrement())
+  name         String
+  currentLat   Float          @default(40.7128)
+  currentLng   Float          @default(-74.0060)
+  status       DriverStatus   @default(AVAILABLE)
+  deliveries   Delivery[]
+  routeHistory RouteHistory[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Delivery {
+  id               Int            @id @default(autoincrement())
+  destinationLat   Float
+  destinationLng   Float
+  status           DeliveryStatus @default(PENDING)
+  assignedDriver   Driver?        @relation(fields: [assignedDriverId], references: [id])
+  assignedDriverId Int?
+  label            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model RouteHistory {
+  id            Int      @id @default(autoincrement())
+  driver        Driver   @relation(fields: [driverId], references: [id])
+  driverId      Int
+  routePolyline Json
+  timestamp     DateTime @default(now())
+}
